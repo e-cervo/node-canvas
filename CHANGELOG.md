@@ -8,8 +8,45 @@ project adheres to [Semantic Versioning](http://semver.org/).
 (Unreleased)
 ==================
 ### Changed
+* Improve performance and memory usage of `save()`/`restore()`.
+* `save()`/`restore()` no longer have a maximum depth (previously 64 states).
 ### Added
 ### Fixed
+* `textBaseline` and `textAlign` were not saved/restored by `save()`/`restore()`. ([#1936](https://github.com/Automattic/node-canvas/issues/2029))
+* Fix a crash in `getImageData` when the rectangle is entirely outside the canvas. ([#2024](https://github.com/Automattic/node-canvas/issues/2024))
+
+2.10.2
+==================
+### Fixed
+* Fix `Assertion failed: (object->InternalFieldCount() > 0), function Unwrap, file nan_object_wrap.h, line 32.` ([#2025](https://github.com/Automattic/node-canvas/issues/2025))
+### Changed
+* Update nan to v2.17.0 to ensure Node.js v18+ support.
+* Implement valid `this` checks in all `SetAccessor` methods. 
+
+2.10.1
+==================
+### Fixed
+* Fix `actualBoundingBoxLeft` and `actualBoundingBoxRight` when `textAlign='center'` or `'right'` ([#1909](https://github.com/Automattic/node-canvas/issues/1909))
+* Fix `rgba(r,g,b,0)` with alpha to 0 should parse as transparent, not opaque. ([#2110](https://github.com/Automattic/node-canvas/pull/2110))
+
+2.10.0
+==================
+### Added
+* Export `pangoVersion`
+* [`ctx.roundRect()`](https://developer.chrome.com/blog/canvas2d/#round-rect)
+### Fixed
+* `rgba(r,g,b)` with no alpha should parse as opaque, not transparent. ([#2029](https://github.com/Automattic/node-canvas/issues/2029))
+* Typo in `PngConfig.filters` types. ([#2072](https://github.com/Automattic/node-canvas/issues/2072))
+* `createPattern()` always used "repeat" mode; now supports "repeat-x" and "repeat-y". ([#2066](https://github.com/Automattic/node-canvas/issues/2066))
+* Crashes and hangs when using non-finite values in `context.arc()`. ([#2055](https://github.com/Automattic/node-canvas/issues/2055))
+* Incorrect `context.arc()` geometry logic for full ellipses. ([#1808](https://github.com/Automattic/node-canvas/issues/1808), ([#1736](https://github.com/Automattic/node-canvas/issues/1736)))
+* Added missing `deregisterAllFonts` to the Typescript declaration file ([#2096](https://github.com/Automattic/node-canvas/pull/2096))
+* Add `User-Agent` header when requesting remote images ([#2099](https://github.com/Automattic/node-canvas/issues/2099))
+
+2.9.3
+==================
+### Fixed
+* Wrong fonts used when calling `registerFont` multiple times with the same family name ([#2041](https://github.com/Automattic/node-canvas/issues/2041))
 
 2.9.2
 ==================

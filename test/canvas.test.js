@@ -20,6 +20,11 @@ const {
   deregisterAllFonts
 } = require('../')
 
+function assertApprox(actual, expected, tol) {
+  assert(Math.abs(expected - actual) <= tol,
+    "Expected " + actual + " to be " + expected + " +/- " + tol);
+}
+
 describe('Canvas', function () {
   // Run with --expose-gc and uncomment this line to help find memory problems:
   // afterEach(gc);
@@ -201,6 +206,12 @@ describe('Canvas', function () {
 
     ctx.fillStyle = 'rgba(0, 0, 0, 42.42)'
     assert.equal('#000000', ctx.fillStyle)
+
+    ctx.fillStyle = 'rgba(255, 250, 255)';
+    assert.equal('#fffaff', ctx.fillStyle);
+
+    ctx.fillStyle = 'rgba(124, 58, 26, 0)';
+    assert.equal('rgba(124, 58, 26, 0.00)', ctx.fillStyle);
 
     // hsl / hsla tests
 
@@ -536,6 +547,8 @@ describe('Canvas', function () {
     const canvas = createCanvas(200, 200)
     const ctx = canvas.getContext('2d')
 
+    assert.equal('left', ctx.textAlign) // default TODO wrong default
+    ctx.textAlign = 'start'
     assert.equal('start', ctx.textAlign)
     ctx.textAlign = 'center'
     assert.equal('center', ctx.textAlign)
@@ -943,19 +956,45 @@ describe('Canvas', function () {
       let metrics = ctx.measureText('Alphabet')
       // Actual value depends on font library version. Have observed values
       // between 0 and 0.769.
-      assert.ok(metrics.alphabeticBaseline >= 0 && metrics.alphabeticBaseline <= 1)
+      assertApprox(metrics.alphabeticBaseline, 0.5, 0.5)
       // Positive = going up from the baseline
       assert.ok(metrics.actualBoundingBoxAscent > 0)
       // Positive = going down from the baseline
-      assert.ok(metrics.actualBoundingBoxDescent > 0) // ~4-5
+      assertApprox(metrics.actualBoundingBoxDescent, 5, 2)
 
       ctx.textBaseline = 'bottom'
       metrics = ctx.measureText('Alphabet')
       assert.strictEqual(ctx.textBaseline, 'bottom')
-      assert.ok(metrics.alphabeticBaseline > 0) // ~4-5
+      assertApprox(metrics.alphabeticBaseline, 5, 2)
       assert.ok(metrics.actualBoundingBoxAscent > 0)
       // On the baseline or slightly above
       assert.ok(metrics.actualBoundingBoxDescent <= 0)
+    })
+
+    it('actualBoundingBox is correct for left, center and right alignment (#1909)', function () {
+      const canvas = createCanvas(0, 0)
+      const ctx = canvas.getContext('2d')
+
+      // positive actualBoundingBoxLeft indicates a distance going left from the
+      // given alignment point.
+
+      // positive actualBoundingBoxRight indicates a distance going right from
+      // the given alignment point.
+
+      ctx.textAlign = 'left'
+      const lm = ctx.measureText('aaaa')
+      assertApprox(lm.actualBoundingBoxLeft, -1, 6)
+      assertApprox(lm.actualBoundingBoxRight, 21, 6)
+
+      ctx.textAlign = 'center'
+      const cm = ctx.measureText('aaaa')
+      assertApprox(cm.actualBoundingBoxLeft, 9, 6)
+      assertApprox(cm.actualBoundingBoxRight, 11, 6)
+
+      ctx.textAlign = 'right'
+      const rm = ctx.measureText('aaaa')
+      assertApprox(rm.actualBoundingBoxLeft, 19, 6)
+      assertApprox(rm.actualBoundingBoxRight, 1, 6)
     })
   })
 
@@ -1202,6 +1241,18 @@ describe('Canvas', function () {
       assert.throws(() => {
         ctx.getImageData(0, 0, 3, 6)
       })
+    })
+
+    it('does not throw if rectangle is outside the canvas (#2024)', () => {
+      const canvas = createCanvas(200, 200)
+      const ctx = canvas.getContext('2d')
+
+      ctx.rect(0, 0, 100, 100);
+      ctx.fill();
+
+      const imageData = ctx.getImageData(0, -11, 10, 10);
+      assert.equal(10, imageData.width)
+      assert.equal(1, imageData.height)
     })
   })
 
@@ -1862,5 +1913,56 @@ describe('Canvas', function () {
     data.forEach(function (byte, index) {
       if (index + 1 & 3) { assert.strictEqual(byte, 128) } else { assert.strictEqual(byte, 255) }
     })
+  })
+
+  describe('Context2d#save()/restore()', function () {
+    // Based on WPT meta:2d.state.saverestore
+    const state = [ // non-default values to test with
+      ['strokeStyle', '#ff0000'],
+      ['fillStyle', '#ff0000'],
+      ['globalAlpha', 0.5],
+      ['lineWidth', 0.5],
+      ['lineCap', 'round'],
+      ['lineJoin', 'round'],
+      ['miterLimit', 0.5],
+      ['shadowOffsetX', 5],
+      ['shadowOffsetY', 5],
+      ['shadowBlur', 5],
+      ['shadowColor', '#ff0000'],
+      ['globalCompositeOperation', 'copy'],
+      // ['font', '25px serif'], // TODO #1946
+      ['textAlign', 'center'],
+      ['textBaseline', 'bottom'],
+      // Added vs. WPT
+      ['imageSmoothingEnabled', false],
+      // ['imageSmoothingQuality', ], // not supported by node-canvas, #2114
+      ['lineDashOffset', 1.0],
+      // Non-standard properties:
+      ['patternQuality', 'best'],
+      // ['quality', 'best'], // doesn't do anything, TODO remove
+      ['textDrawingMode', 'glyph'],
+      ['antialias', 'gray']
+    ]
+
+    for (const [k, v] of state) {
+      it(`2d.state.saverestore.${k}`, function () {
+        const canvas = createCanvas(0, 0)
+        const ctx = canvas.getContext('2d')
+
+        // restore() undoes modification:
+        let old = ctx[k]
+        ctx.save()
+        ctx[k] = v
+        ctx.restore()
+        assert.strictEqual(ctx[k], old)
+  
+        // save() doesn't modify the value:
+        ctx[k] = v
+        old = ctx[k]
+        ctx.save()
+        assert.strictEqual(ctx[k], old)
+        ctx.restore()
+      })
+    }
   })
 })

@@ -95,6 +95,43 @@ tests['fillRect()'] = function (ctx) {
   render(1)
 }
 
+tests['roundRect()'] = function (ctx) {
+  if (!ctx.roundRect) {
+    ctx.textAlign = 'center'
+    ctx.fillText('roundRect() not supported', 100, 100, 190)
+    ctx.fillText('try Chrome instead', 100, 115, 190)
+    return
+  }
+  ctx.roundRect(5, 5, 60, 60, 20)
+  ctx.fillStyle = 'red'
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.roundRect(5, 70, 60, 60, [10, 15, 20, 25])
+  ctx.fillStyle = 'blue'
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.roundRect(70, 5, 60, 60, [10])
+  ctx.fillStyle = 'green'
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.roundRect(70, 70, 60, 60, [10, 15])
+  ctx.fillStyle = 'orange'
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.roundRect(135, 5, 60, 60, [10, 15, 20])
+  ctx.fillStyle = 'pink'
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.roundRect(135, 70, 60, 60, [{ x: 30, y: 10 }, { x: 5, y: 20 }])
+  ctx.fillStyle = 'darkseagreen'
+  ctx.fill()
+}
+
 tests['lineTo()'] = function (ctx) {
   // Filled triangle
   ctx.beginPath()
@@ -144,6 +181,35 @@ tests['arc() 2'] = function (ctx) {
       }
     }
   }
+}
+
+tests['arc()() #1736'] = function (ctx) {
+  let centerX = 512
+  let centerY = 512
+  let startAngle = 6.283185307179586 // exactly 2pi
+  let endAngle = 7.5398223686155035
+  let innerRadius = 359.67999999999995
+  let outerRadius = 368.64
+
+  ctx.scale(0.2, 0.2)
+
+  ctx.beginPath()
+  ctx.moveTo(centerX + Math.cos(startAngle) * innerRadius, centerY + Math.sin(startAngle) * innerRadius)
+  ctx.lineTo(centerX + Math.cos(startAngle) * outerRadius, centerY + Math.sin(startAngle) * outerRadius)
+  ctx.arc(centerX, centerY, outerRadius, startAngle, endAngle, false)
+  ctx.lineTo(centerX + Math.cos(endAngle) * innerRadius, centerY + Math.sin(endAngle) * innerRadius)
+  ctx.arc(centerX, centerY, innerRadius, endAngle, startAngle, true)
+  ctx.closePath()
+  ctx.stroke()
+}
+
+tests['arc()() #1808'] = function (ctx) {
+  ctx.scale(0.5, 0.5)
+  ctx.beginPath()
+  ctx.arc(256, 256, 50, 0, 2 * Math.PI, true)
+  ctx.arc(256, 256, 25, 0, 2 * Math.PI, false)
+  ctx.closePath()
+  ctx.fill()
 }
 
 tests['arcTo()'] = function (ctx) {
@@ -466,6 +532,24 @@ tests['createPattern() with globalAlpha'] = function (ctx, done) {
     ctx.strokeStyle = pattern
     ctx.lineWidth = 200
     ctx.strokeRect(1100, 1100, 800, 800)
+    done()
+  }
+  img.src = imageSrc('face.jpeg')
+}
+
+tests['createPattern() repeat-x and repeat-y'] = function (ctx, done) {
+  const img = new Image()
+  img.onload = function () {
+    ctx.scale(0.1, 0.1)
+    ctx.lineStyle = 'black'
+    ctx.lineWidth = 10
+    ctx.fillStyle = ctx.createPattern(img, 'repeat-x')
+    ctx.fillRect(0, 0, 900, 900)
+    ctx.strokeRect(0, 0, 900, 900)
+    ctx.translate(1000, 1000)
+    ctx.fillStyle = ctx.createPattern(img, 'repeat-y')
+    ctx.fillRect(0, 0, 900, 900)
+    ctx.strokeRect(0, 0, 900, 900)
     done()
   }
   img.src = imageSrc('face.jpeg')
@@ -2574,7 +2658,8 @@ tests['measureText()'] = function (ctx) {
     const metrics = ctx.measureText(text)
     ctx.strokeStyle = 'blue'
     ctx.strokeRect(
-      x - metrics.actualBoundingBoxLeft + 0.5,
+      // positive numbers for actualBoundingBoxLeft indicate a distance going left
+      x + metrics.actualBoundingBoxLeft + 0.5,
       y - metrics.actualBoundingBoxAscent + 0.5,
       metrics.width,
       metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent
@@ -2593,8 +2678,19 @@ tests['measureText()'] = function (ctx) {
   drawWithBBox('Alphabet bottom', 20, 90)
 
   ctx.textBaseline = 'alphabetic'
+  ctx.save()
   ctx.rotate(Math.PI / 8)
   drawWithBBox('Alphabet', 50, 100)
+  ctx.restore()
+
+  ctx.textAlign = 'center'
+  drawWithBBox('Centered', 100, 195)
+
+  ctx.textAlign = 'left'
+  drawWithBBox('Left', 10, 195)
+
+  ctx.textAlign = 'right'
+  drawWithBBox('right', 195, 195)
 }
 
 tests['image sampling (#1084)'] = function (ctx, done) {

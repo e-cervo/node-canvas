@@ -64,10 +64,10 @@ Canvas::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 #ifdef HAVE_JPEG
   Nan::SetPrototypeMethod(ctor, "streamJPEGSync", StreamJPEGSync);
 #endif
-  SetProtoAccessor(proto, Nan::New("type").ToLocalChecked(), GetType, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("stride").ToLocalChecked(), GetStride, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth, ctor);
-  SetProtoAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight, ctor);
+  Nan::SetAccessor(proto, Nan::New("type").ToLocalChecked(), GetType);
+  Nan::SetAccessor(proto, Nan::New("stride").ToLocalChecked(), GetStride);
+  Nan::SetAccessor(proto, Nan::New("width").ToLocalChecked(), GetWidth, SetWidth);
+  Nan::SetAccessor(proto, Nan::New("height").ToLocalChecked(), GetHeight, SetHeight);
 
   Nan::SetTemplate(proto, "PNG_NO_FILTERS", Nan::New<Uint32>(PNG_NO_FILTERS));
   Nan::SetTemplate(proto, "PNG_FILTER_NONE", Nan::New<Uint32>(PNG_FILTER_NONE));
@@ -144,6 +144,10 @@ NAN_METHOD(Canvas::New) {
  */
 
 NAN_GETTER(Canvas::GetType) {
+  if (!Canvas::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Canvas.GetType called on incompatible receiver");
+    return;
+  }
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   info.GetReturnValue().Set(Nan::New<String>(canvas->backend()->getName()).ToLocalChecked());
 }
@@ -152,6 +156,10 @@ NAN_GETTER(Canvas::GetType) {
  * Get stride.
  */
 NAN_GETTER(Canvas::GetStride) {
+  if (!Canvas::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Canvas.GetStride called on incompatible receiver");
+    return;
+  }
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(canvas->stride()));
 }
@@ -161,6 +169,10 @@ NAN_GETTER(Canvas::GetStride) {
  */
 
 NAN_GETTER(Canvas::GetWidth) {
+  if (!Canvas::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Canvas.GetWidth called on incompatible receiver");
+    return;
+  }
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(canvas->getWidth()));
 }
@@ -170,6 +182,10 @@ NAN_GETTER(Canvas::GetWidth) {
  */
 
 NAN_SETTER(Canvas::SetWidth) {
+  if (!Canvas::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Canvas.SetWidth called on incompatible receiver");
+    return;
+  }
   if (value->IsNumber()) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
     canvas->backend()->setWidth(Nan::To<uint32_t>(value).FromMaybe(0));
@@ -182,6 +198,10 @@ NAN_SETTER(Canvas::SetWidth) {
  */
 
 NAN_GETTER(Canvas::GetHeight) {
+  if (!Canvas::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Canvas.GetHeight called on incompatible receiver");
+    return;
+  }
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(canvas->getHeight()));
 }
@@ -191,6 +211,10 @@ NAN_GETTER(Canvas::GetHeight) {
  */
 
 NAN_SETTER(Canvas::SetHeight) {
+  if (!Canvas::constructor.Get(info.GetIsolate())->HasInstance(info.This())) {
+    Nan::ThrowTypeError("Method Canvas.SetHeight called on incompatible receiver");
+    return;
+  }
   if (value->IsNumber()) {
     Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
     canvas->backend()->setHeight(Nan::To<uint32_t>(value).FromMaybe(0));
@@ -773,13 +797,13 @@ NAN_METHOD(Canvas::RegisterFont) {
 NAN_METHOD(Canvas::DeregisterAllFonts) {
   // Unload all fonts from pango to free up memory
   bool success = true;
-  
+
   std::for_each(font_face_list.begin(), font_face_list.end(), [&](FontFace& f) {
     if (!deregister_font( (unsigned char *)f.file_path )) success = false;
     pango_font_description_free(f.user_desc);
     pango_font_description_free(f.sys_desc);
   });
-  
+
   font_face_list.clear();
   if (!success) Nan::ThrowError("Could not deregister one or more fonts");
 }
@@ -879,18 +903,21 @@ Canvas::ResolveFontDescription(const PangoFontDescription *desc) {
       if (streq_casein(family, pangofamily)) {
         const char* sys_desc_family_name = pango_font_description_get_family(ff.sys_desc);
         bool unseen = seen_families.find(sys_desc_family_name) == seen_families.end();
+        bool better = best.user_desc == nullptr || pango_font_description_better_match(desc, best.user_desc, ff.user_desc);
 
         // Avoid sending duplicate SFNT font names due to a bug in Pango for macOS:
         // https://bugzilla.gnome.org/show_bug.cgi?id=762873
         if (unseen) {
           seen_families.insert(sys_desc_family_name);
-          if (renamed_families.size()) renamed_families += ',';
-          renamed_families += sys_desc_family_name;
+
+          if (better) {
+            renamed_families = string(sys_desc_family_name) + (renamed_families.size() ? "," : "") + renamed_families;
+          } else {
+            renamed_families = renamed_families + (renamed_families.size() ? "," : "") + sys_desc_family_name;
+          }
         }
 
-        if (first && (best.user_desc == nullptr || pango_font_description_better_match(desc, best.user_desc, ff.user_desc))) {
-          best = ff;
-        }
+        if (first && better) best = ff;
       }
     }
 
