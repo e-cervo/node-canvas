@@ -36,6 +36,12 @@ Nan::Persistent<FunctionTemplate> Context2d::constructor;
   double width = args[2]; \
   double height = args[3];
 
+#define CHECK_RECEIVER(prop) \
+  if (!Context2d::constructor.Get(info.GetIsolate())->HasInstance(info.This())) { \
+    Nan::ThrowTypeError("Method " #prop " called on incompatible receiver"); \
+    return; \
+  }
+
 constexpr double twoPi = M_PI * 2.;
 
 /*
@@ -129,29 +135,29 @@ Context2d::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
   Nan::SetPrototypeMethod(ctor, "createPattern", CreatePattern);
   Nan::SetPrototypeMethod(ctor, "createLinearGradient", CreateLinearGradient);
   Nan::SetPrototypeMethod(ctor, "createRadialGradient", CreateRadialGradient);
-  SetProtoAccessor(proto, Nan::New("pixelFormat").ToLocalChecked(), GetFormat, NULL, ctor);
-  SetProtoAccessor(proto, Nan::New("patternQuality").ToLocalChecked(), GetPatternQuality, SetPatternQuality, ctor);
-  SetProtoAccessor(proto, Nan::New("imageSmoothingEnabled").ToLocalChecked(), GetImageSmoothingEnabled, SetImageSmoothingEnabled, ctor);
-  SetProtoAccessor(proto, Nan::New("globalCompositeOperation").ToLocalChecked(), GetGlobalCompositeOperation, SetGlobalCompositeOperation, ctor);
-  SetProtoAccessor(proto, Nan::New("globalAlpha").ToLocalChecked(), GetGlobalAlpha, SetGlobalAlpha, ctor);
-  SetProtoAccessor(proto, Nan::New("shadowColor").ToLocalChecked(), GetShadowColor, SetShadowColor, ctor);
-  SetProtoAccessor(proto, Nan::New("miterLimit").ToLocalChecked(), GetMiterLimit, SetMiterLimit, ctor);
-  SetProtoAccessor(proto, Nan::New("lineWidth").ToLocalChecked(), GetLineWidth, SetLineWidth, ctor);
-  SetProtoAccessor(proto, Nan::New("lineCap").ToLocalChecked(), GetLineCap, SetLineCap, ctor);
-  SetProtoAccessor(proto, Nan::New("lineJoin").ToLocalChecked(), GetLineJoin, SetLineJoin, ctor);
-  SetProtoAccessor(proto, Nan::New("lineDashOffset").ToLocalChecked(), GetLineDashOffset, SetLineDashOffset, ctor);
-  SetProtoAccessor(proto, Nan::New("shadowOffsetX").ToLocalChecked(), GetShadowOffsetX, SetShadowOffsetX, ctor);
-  SetProtoAccessor(proto, Nan::New("shadowOffsetY").ToLocalChecked(), GetShadowOffsetY, SetShadowOffsetY, ctor);
-  SetProtoAccessor(proto, Nan::New("shadowBlur").ToLocalChecked(), GetShadowBlur, SetShadowBlur, ctor);
-  SetProtoAccessor(proto, Nan::New("antialias").ToLocalChecked(), GetAntiAlias, SetAntiAlias, ctor);
-  SetProtoAccessor(proto, Nan::New("textDrawingMode").ToLocalChecked(), GetTextDrawingMode, SetTextDrawingMode, ctor);
-  SetProtoAccessor(proto, Nan::New("quality").ToLocalChecked(), GetQuality, SetQuality, ctor);
-  SetProtoAccessor(proto, Nan::New("currentTransform").ToLocalChecked(), GetCurrentTransform, SetCurrentTransform, ctor);
-  SetProtoAccessor(proto, Nan::New("fillStyle").ToLocalChecked(), GetFillStyle, SetFillStyle, ctor);
-  SetProtoAccessor(proto, Nan::New("strokeStyle").ToLocalChecked(), GetStrokeStyle, SetStrokeStyle, ctor);
-  SetProtoAccessor(proto, Nan::New("font").ToLocalChecked(), GetFont, SetFont, ctor);
-  SetProtoAccessor(proto, Nan::New("textBaseline").ToLocalChecked(), GetTextBaseline, SetTextBaseline, ctor);
-  SetProtoAccessor(proto, Nan::New("textAlign").ToLocalChecked(), GetTextAlign, SetTextAlign, ctor);
+  Nan::SetAccessor(proto, Nan::New("pixelFormat").ToLocalChecked(), GetFormat);
+  Nan::SetAccessor(proto, Nan::New("patternQuality").ToLocalChecked(), GetPatternQuality, SetPatternQuality);
+  Nan::SetAccessor(proto, Nan::New("imageSmoothingEnabled").ToLocalChecked(), GetImageSmoothingEnabled, SetImageSmoothingEnabled);
+  Nan::SetAccessor(proto, Nan::New("globalCompositeOperation").ToLocalChecked(), GetGlobalCompositeOperation, SetGlobalCompositeOperation);
+  Nan::SetAccessor(proto, Nan::New("globalAlpha").ToLocalChecked(), GetGlobalAlpha, SetGlobalAlpha);
+  Nan::SetAccessor(proto, Nan::New("shadowColor").ToLocalChecked(), GetShadowColor, SetShadowColor);
+  Nan::SetAccessor(proto, Nan::New("miterLimit").ToLocalChecked(), GetMiterLimit, SetMiterLimit);
+  Nan::SetAccessor(proto, Nan::New("lineWidth").ToLocalChecked(), GetLineWidth, SetLineWidth);
+  Nan::SetAccessor(proto, Nan::New("lineCap").ToLocalChecked(), GetLineCap, SetLineCap);
+  Nan::SetAccessor(proto, Nan::New("lineJoin").ToLocalChecked(), GetLineJoin, SetLineJoin);
+  Nan::SetAccessor(proto, Nan::New("lineDashOffset").ToLocalChecked(), GetLineDashOffset, SetLineDashOffset);
+  Nan::SetAccessor(proto, Nan::New("shadowOffsetX").ToLocalChecked(), GetShadowOffsetX, SetShadowOffsetX);
+  Nan::SetAccessor(proto, Nan::New("shadowOffsetY").ToLocalChecked(), GetShadowOffsetY, SetShadowOffsetY);
+  Nan::SetAccessor(proto, Nan::New("shadowBlur").ToLocalChecked(), GetShadowBlur, SetShadowBlur);
+  Nan::SetAccessor(proto, Nan::New("antialias").ToLocalChecked(), GetAntiAlias, SetAntiAlias);
+  Nan::SetAccessor(proto, Nan::New("textDrawingMode").ToLocalChecked(), GetTextDrawingMode, SetTextDrawingMode);
+  Nan::SetAccessor(proto, Nan::New("quality").ToLocalChecked(), GetQuality, SetQuality);
+  Nan::SetAccessor(proto, Nan::New("currentTransform").ToLocalChecked(), GetCurrentTransform, SetCurrentTransform);
+  Nan::SetAccessor(proto, Nan::New("fillStyle").ToLocalChecked(), GetFillStyle, SetFillStyle);
+  Nan::SetAccessor(proto, Nan::New("strokeStyle").ToLocalChecked(), GetStrokeStyle, SetStrokeStyle);
+  Nan::SetAccessor(proto, Nan::New("font").ToLocalChecked(), GetFont, SetFont);
+  Nan::SetAccessor(proto, Nan::New("textBaseline").ToLocalChecked(), GetTextBaseline, SetTextBaseline);
+  Nan::SetAccessor(proto, Nan::New("textAlign").ToLocalChecked(), GetTextAlign, SetTextAlign);
   Local<Context> ctx = Nan::GetCurrentContext();
   Nan::Set(target, Nan::New("CanvasRenderingContext2d").ToLocalChecked(), ctor->GetFunction(ctx).ToLocalChecked());
   Nan::Set(target, Nan::New("CanvasRenderingContext2dInit").ToLocalChecked(), Nan::New<Function>(SaveExternalModules));
@@ -165,6 +171,13 @@ Context2d::Context2d(Canvas *canvas) {
   _canvas = canvas;
   _context = canvas->createCairoContext();
   _layout = pango_cairo_create_layout(_context);
+
+  // As of January 2023, Pango rounds glyph positions which renders text wider
+  // or narrower than the browser. See #2184 for more information
+#if PANGO_VERSION_CHECK(1, 44, 0)
+  pango_context_set_round_glyph_positions(pango_layout_get_context(_layout), FALSE);
+#endif
+
   states.emplace();
   state = &states.top();
   pango_layout_set_font_description(_layout, state->fontDescription);
@@ -713,6 +726,7 @@ NAN_METHOD(Context2d::SaveExternalModules) {
 */
 
 NAN_GETTER(Context2d::GetFormat) {
+  CHECK_RECEIVER(Context2d.GetFormat);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   std::string pixelFormatString;
   switch (context->canvas()->backend()->getFormat()) {
@@ -1392,6 +1406,7 @@ NAN_METHOD(Context2d::DrawImage) {
  */
 
 NAN_GETTER(Context2d::GetGlobalAlpha) {
+  CHECK_RECEIVER(Context2d.GetGlobalAlpha);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(context->state->globalAlpha));
 }
@@ -1401,6 +1416,7 @@ NAN_GETTER(Context2d::GetGlobalAlpha) {
  */
 
 NAN_SETTER(Context2d::SetGlobalAlpha) {
+  CHECK_RECEIVER(Context2d.SetGlobalAlpha);
   double n = Nan::To<double>(value).FromMaybe(0);
   if (n >= 0 && n <= 1) {
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -1413,6 +1429,7 @@ NAN_SETTER(Context2d::SetGlobalAlpha) {
  */
 
 NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
+  CHECK_RECEIVER(Context2d.GetGlobalCompositeOperation);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
 
@@ -1463,6 +1480,7 @@ NAN_GETTER(Context2d::GetGlobalCompositeOperation) {
  */
 
 NAN_SETTER(Context2d::SetPatternQuality) {
+  CHECK_RECEIVER(Context2d.SetPatternQuality);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Nan::Utf8String quality(Nan::To<String>(value).ToLocalChecked());
   if (0 == strcmp("fast", *quality)) {
@@ -1483,6 +1501,7 @@ NAN_SETTER(Context2d::SetPatternQuality) {
  */
 
 NAN_GETTER(Context2d::GetPatternQuality) {
+  CHECK_RECEIVER(Context2d.GetPatternQuality);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   const char *quality;
   switch (context->state->patternQuality) {
@@ -1500,6 +1519,7 @@ NAN_GETTER(Context2d::GetPatternQuality) {
  */
 
 NAN_SETTER(Context2d::SetImageSmoothingEnabled) {
+  CHECK_RECEIVER(Context2d.SetImageSmoothingEnabled);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   context->state->imageSmoothingEnabled = Nan::To<bool>(value).FromMaybe(false);
 }
@@ -1509,6 +1529,7 @@ NAN_SETTER(Context2d::SetImageSmoothingEnabled) {
  */
 
 NAN_GETTER(Context2d::GetImageSmoothingEnabled) {
+  CHECK_RECEIVER(Context2d.GetImageSmoothingEnabled);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   info.GetReturnValue().Set(Nan::New<Boolean>(context->state->imageSmoothingEnabled));
 }
@@ -1518,6 +1539,7 @@ NAN_GETTER(Context2d::GetImageSmoothingEnabled) {
  */
 
 NAN_SETTER(Context2d::SetGlobalCompositeOperation) {
+  CHECK_RECEIVER(Context2d.SetGlobalCompositeOperation);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   Nan::Utf8String opStr(Nan::To<String>(value).ToLocalChecked()); // Unlike CSS colors, this *is* case-sensitive
@@ -1565,6 +1587,7 @@ NAN_SETTER(Context2d::SetGlobalCompositeOperation) {
  */
 
 NAN_GETTER(Context2d::GetShadowOffsetX) {
+  CHECK_RECEIVER(Context2d.GetShadowOffsetX);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(context->state->shadowOffsetX));
 }
@@ -1574,6 +1597,7 @@ NAN_GETTER(Context2d::GetShadowOffsetX) {
  */
 
 NAN_SETTER(Context2d::SetShadowOffsetX) {
+  CHECK_RECEIVER(Context2d.SetShadowOffsetX);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   context->state->shadowOffsetX = Nan::To<double>(value).FromMaybe(0);
 }
@@ -1583,6 +1607,7 @@ NAN_SETTER(Context2d::SetShadowOffsetX) {
  */
 
 NAN_GETTER(Context2d::GetShadowOffsetY) {
+  CHECK_RECEIVER(Context2d.GetShadowOffsetY);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(context->state->shadowOffsetY));
 }
@@ -1592,6 +1617,7 @@ NAN_GETTER(Context2d::GetShadowOffsetY) {
  */
 
 NAN_SETTER(Context2d::SetShadowOffsetY) {
+  CHECK_RECEIVER(Context2d.SetShadowOffsetY);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   context->state->shadowOffsetY = Nan::To<double>(value).FromMaybe(0);
 }
@@ -1601,6 +1627,7 @@ NAN_SETTER(Context2d::SetShadowOffsetY) {
  */
 
 NAN_GETTER(Context2d::GetShadowBlur) {
+  CHECK_RECEIVER(Context2d.GetShadowBlur);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(context->state->shadowBlur));
 }
@@ -1610,6 +1637,7 @@ NAN_GETTER(Context2d::GetShadowBlur) {
  */
 
 NAN_SETTER(Context2d::SetShadowBlur) {
+  CHECK_RECEIVER(Context2d.SetShadowBlur);
   int n = Nan::To<double>(value).FromMaybe(0);
   if (n >= 0) {
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -1622,6 +1650,7 @@ NAN_SETTER(Context2d::SetShadowBlur) {
  */
 
 NAN_GETTER(Context2d::GetAntiAlias) {
+  CHECK_RECEIVER(Context2d.GetAntiAlias);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   const char *aa;
   switch (cairo_get_antialias(context->context())) {
@@ -1638,6 +1667,7 @@ NAN_GETTER(Context2d::GetAntiAlias) {
  */
 
 NAN_SETTER(Context2d::SetAntiAlias) {
+  CHECK_RECEIVER(Context2d.SetAntiAlias);
   Nan::Utf8String str(Nan::To<String>(value).ToLocalChecked());
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
@@ -1661,6 +1691,7 @@ NAN_SETTER(Context2d::SetAntiAlias) {
  */
 
 NAN_GETTER(Context2d::GetTextDrawingMode) {
+  CHECK_RECEIVER(Context2d.GetTextDrawingMode);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   const char *mode;
   if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
@@ -1678,6 +1709,7 @@ NAN_GETTER(Context2d::GetTextDrawingMode) {
  */
 
 NAN_SETTER(Context2d::SetTextDrawingMode) {
+  CHECK_RECEIVER(Context2d.SetTextDrawingMode);
   Nan::Utf8String str(Nan::To<String>(value).ToLocalChecked());
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   if (0 == strcmp("path", *str)) {
@@ -1692,6 +1724,7 @@ NAN_SETTER(Context2d::SetTextDrawingMode) {
  */
 
 NAN_GETTER(Context2d::GetQuality) {
+  CHECK_RECEIVER(Context2d.GetQuality);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   const char *filter;
   switch (cairo_pattern_get_filter(cairo_get_source(context->context()))) {
@@ -1709,6 +1742,7 @@ NAN_GETTER(Context2d::GetQuality) {
  */
 
 NAN_SETTER(Context2d::SetQuality) {
+  CHECK_RECEIVER(Context2d.SetQuality);
   Nan::Utf8String str(Nan::To<String>(value).ToLocalChecked());
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_filter_t filter;
@@ -1771,6 +1805,7 @@ void parse_matrix_from_object(cairo_matrix_t &matrix, Local<Object> mat) {
  */
 
 NAN_GETTER(Context2d::GetCurrentTransform) {
+  CHECK_RECEIVER(Context2d.GetCurrentTransform);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Local<Object> instance = get_current_transform(context);
 
@@ -1782,6 +1817,7 @@ NAN_GETTER(Context2d::GetCurrentTransform) {
  */
 
 NAN_SETTER(Context2d::SetCurrentTransform) {
+  CHECK_RECEIVER(Context2d.SetCurrentTransform);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Local<Context> ctx = Nan::GetCurrentContext();
   Local<Object> mat = Nan::To<Object>(value).ToLocalChecked();
@@ -1803,6 +1839,7 @@ NAN_SETTER(Context2d::SetCurrentTransform) {
  */
 
 NAN_GETTER(Context2d::GetFillStyle) {
+  CHECK_RECEIVER(Context2d.GetFillStyle);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Isolate *iso = Isolate::GetCurrent();
   Local<Value> style;
@@ -1820,6 +1857,7 @@ NAN_GETTER(Context2d::GetFillStyle) {
  */
 
 NAN_SETTER(Context2d::SetFillStyle) {
+  CHECK_RECEIVER(Context2d.SetFillStyle);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
 
   if (value->IsString()) {
@@ -1847,6 +1885,7 @@ NAN_SETTER(Context2d::SetFillStyle) {
  */
 
 NAN_GETTER(Context2d::GetStrokeStyle) {
+  CHECK_RECEIVER(Context2d.GetStrokeStyle);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Local<Value> style;
 
@@ -1863,6 +1902,7 @@ NAN_GETTER(Context2d::GetStrokeStyle) {
  */
 
 NAN_SETTER(Context2d::SetStrokeStyle) {
+  CHECK_RECEIVER(Context2d.SetStrokeStyle);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
 
   if (value->IsString()) {
@@ -1890,6 +1930,7 @@ NAN_SETTER(Context2d::SetStrokeStyle) {
  */
 
 NAN_GETTER(Context2d::GetMiterLimit) {
+  CHECK_RECEIVER(Context2d.GetMiterLimit);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(cairo_get_miter_limit(context->context())));
 }
@@ -1899,6 +1940,7 @@ NAN_GETTER(Context2d::GetMiterLimit) {
  */
 
 NAN_SETTER(Context2d::SetMiterLimit) {
+  CHECK_RECEIVER(Context2d.SetMiterLimit);
   double n = Nan::To<double>(value).FromMaybe(0);
   if (n > 0) {
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -1911,6 +1953,7 @@ NAN_SETTER(Context2d::SetMiterLimit) {
  */
 
 NAN_GETTER(Context2d::GetLineWidth) {
+  CHECK_RECEIVER(Context2d.GetLineWidth);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   info.GetReturnValue().Set(Nan::New<Number>(cairo_get_line_width(context->context())));
 }
@@ -1920,6 +1963,7 @@ NAN_GETTER(Context2d::GetLineWidth) {
  */
 
 NAN_SETTER(Context2d::SetLineWidth) {
+  CHECK_RECEIVER(Context2d.SetLineWidth);
   double n = Nan::To<double>(value).FromMaybe(0);
   if (n > 0 && n != std::numeric_limits<double>::infinity()) {
     Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
@@ -1932,6 +1976,7 @@ NAN_SETTER(Context2d::SetLineWidth) {
  */
 
 NAN_GETTER(Context2d::GetLineJoin) {
+  CHECK_RECEIVER(Context2d.GetLineJoin);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   const char *join;
   switch (cairo_get_line_join(context->context())) {
@@ -1947,6 +1992,7 @@ NAN_GETTER(Context2d::GetLineJoin) {
  */
 
 NAN_SETTER(Context2d::SetLineJoin) {
+  CHECK_RECEIVER(Context2d.SetLineJoin);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   Nan::Utf8String type(Nan::To<String>(value).ToLocalChecked());
@@ -1964,6 +2010,7 @@ NAN_SETTER(Context2d::SetLineJoin) {
  */
 
 NAN_GETTER(Context2d::GetLineCap) {
+  CHECK_RECEIVER(Context2d.GetLineCap);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   const char *cap;
   switch (cairo_get_line_cap(context->context())) {
@@ -1979,6 +2026,7 @@ NAN_GETTER(Context2d::GetLineCap) {
  */
 
 NAN_SETTER(Context2d::SetLineCap) {
+  CHECK_RECEIVER(Context2d.SetLineCap);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   Nan::Utf8String type(Nan::To<String>(value).ToLocalChecked());
@@ -2013,6 +2061,7 @@ NAN_METHOD(Context2d::IsPointInPath) {
  */
 
 NAN_SETTER(Context2d::SetShadowColor) {
+  CHECK_RECEIVER(Context2d.SetShadowColor);
   short ok;
   Nan::Utf8String str(Nan::To<String>(value).ToLocalChecked());
   uint32_t rgba = rgba_from_string(*str, &ok);
@@ -2027,6 +2076,7 @@ NAN_SETTER(Context2d::SetShadowColor) {
  */
 
 NAN_GETTER(Context2d::GetShadowColor) {
+  CHECK_RECEIVER(Context2d.GetShadowColor);
   char buf[64];
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   rgba_to_string(context->state->shadow, buf, sizeof(buf));
@@ -2501,6 +2551,7 @@ NAN_METHOD(Context2d::MoveTo) {
  */
 
 NAN_GETTER(Context2d::GetFont) {
+  CHECK_RECEIVER(Context2d.GetFont);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   Isolate *iso = Isolate::GetCurrent();
   Local<Value> font;
@@ -2523,6 +2574,7 @@ NAN_GETTER(Context2d::GetFont) {
  */
 
 NAN_SETTER(Context2d::SetFont) {
+  CHECK_RECEIVER(Context2d.SetFont);
   if (!value->IsString()) return;
 
   Isolate *iso = Isolate::GetCurrent();
@@ -2580,6 +2632,7 @@ NAN_SETTER(Context2d::SetFont) {
  */
 
 NAN_GETTER(Context2d::GetTextBaseline) {
+  CHECK_RECEIVER(Context2d.GetTextBaseline);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   const char* baseline;
   switch (context->state->textBaseline) {
@@ -2599,6 +2652,7 @@ NAN_GETTER(Context2d::GetTextBaseline) {
  */
 
 NAN_SETTER(Context2d::SetTextBaseline) {
+  CHECK_RECEIVER(Context2d.SetTextBaseline);
   if (!value->IsString()) return;
 
   Nan::Utf8String opStr(Nan::To<String>(value).ToLocalChecked());
@@ -2622,6 +2676,7 @@ NAN_SETTER(Context2d::SetTextBaseline) {
  */
 
 NAN_GETTER(Context2d::GetTextAlign) {
+  CHECK_RECEIVER(Context2d.GetTextAlign);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   const char* align;
   switch (context->state->textAlignment) {
@@ -2641,6 +2696,7 @@ NAN_GETTER(Context2d::GetTextAlign) {
  */
 
 NAN_SETTER(Context2d::SetTextAlign) {
+  CHECK_RECEIVER(Context2d.SetTextAlign);
   if (!value->IsString()) return;
 
   Nan::Utf8String opStr(Nan::To<String>(value).ToLocalChecked());
@@ -2803,6 +2859,7 @@ NAN_METHOD(Context2d::GetLineDash) {
  * ref: http://www.w3.org/TR/2dcontext/#dom-context-2d-setlinedash
  */
 NAN_SETTER(Context2d::SetLineDashOffset) {
+  CHECK_RECEIVER(Context2d.SetLineDashOffset);
   double offset = Nan::To<double>(value).FromMaybe(0);
   if (!std::isfinite(offset)) return;
 
@@ -2820,6 +2877,7 @@ NAN_SETTER(Context2d::SetLineDashOffset) {
  * ref: http://www.w3.org/TR/2dcontext/#dom-context-2d-setlinedash
  */
 NAN_GETTER(Context2d::GetLineDashOffset) {
+  CHECK_RECEIVER(Context2d.GetLineDashOffset);
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
   cairo_t *ctx = context->context();
   double offset;
@@ -3306,3 +3364,5 @@ NAN_METHOD(Context2d::Ellipse) {
   }
   cairo_set_matrix(ctx, &save_matrix);
 }
+
+#undef CHECK_RECEIVER
