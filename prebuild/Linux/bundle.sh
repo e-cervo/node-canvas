@@ -2,6 +2,7 @@ set -ex
 
 copies=$(lddtree.sh -l build/Release/canvas.node | sed -r -e '/^\/lib/d' -e '/canvas.node$/d');
 
+apt update
 apt install -y patchelf
 
 for so in $copies; do
