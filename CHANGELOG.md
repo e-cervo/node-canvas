@@ -10,8 +10,18 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 ### Added
 ### Fixed
+
+2.11.2
+==================
+### Fixed
+* Building on Windows in CI (and maybe other Windows configurations?) (#2216)
+
+2.11.1
+==================
+### Fixed
 * Add missing property `canvas` to the `CanvasRenderingContext2D` type
 * Fixed glyph positions getting rounded, resulting text having a slight `letter-spacing` effect
+* Fixed `ctx.font` not being restored correctly after `ctx.restore()` (#1946)
 
 2.11.0
 ==================
