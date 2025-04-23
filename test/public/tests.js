@@ -3,6 +3,8 @@ let Image
 let imageSrc
 const tests = {}
 
+/* global btoa */
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = tests
   Image = require('../../').Image
@@ -2378,6 +2380,28 @@ tests['putImageData() 10'] = function (ctx) {
   ctx.putImageData(data, 20, 120)
 }
 
+tests['putImageData() 11'] = function (ctx) {
+  for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < 8; j++) {
+      ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
+      ctx.fillRect(j * 25, i * 25, 25, 25)
+    }
+  }
+  const data = ctx.getImageData(-25, -25, 50, 50)
+  ctx.putImageData(data, 10, 10)
+}
+
+tests['putImageData() 12'] = function (ctx) {
+  for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < 8; j++) {
+      ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ',' + Math.floor(255 - 42.5 * j) + ',0)'
+      ctx.fillRect(j * 25, i * 25, 25, 25)
+    }
+  }
+  const data = ctx.getImageData(175, 175, 50, 50)
+  ctx.putImageData(data, 10, 10)
+}
+
 tests['putImageData() alpha'] = function (ctx) {
   ctx.fillStyle = 'rgba(255,0,0,0.5)'
   ctx.fillRect(0, 0, 50, 100)
@@ -2751,4 +2775,60 @@ tests['transformed drawimage'] = function (ctx) {
   ctx.fillRect(5, 5, 50, 50)
   ctx.transform(1.2, 1, 1.8, 1.3, 0, 0)
   ctx.drawImage(ctx.canvas, 0, 0)
+}
+
+// https://github.com/noell/jpg-exif-test-images
+for (let n = 1; n <= 8; n++) {
+  tests[`exif orientation ${n}`] = function (ctx, done) {
+    const img = new Image()
+    img.onload = function () {
+      ctx.drawImage(img, 0, 0)
+      done()
+    }
+    img.src = imageSrc(`exif-orientation-f${n}.jpg`)
+  }
+}
+
+tests['invalid exif orientation 9'] = function (ctx, done) {
+  const img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0)
+    done()
+  }
+  img.src = imageSrc(`exif-orientation-fi.jpg`)
+}
+
+tests['two exif orientations, value 1 and value 2'] = function (ctx, done) {
+  const img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0)
+    done()
+  }
+  img.src = imageSrc(`exif-orientation-fm.jpg`)
+}
+
+tests['no exif orientation'] = function (ctx, done) {
+  const img = new Image()
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0)
+    done()
+  }
+  img.src = imageSrc(`exif-orientation-fn.jpg`)
+}
+
+tests['scaling SVGs'] = function (ctx, done) {
+  const img = new Image()
+
+  img.onload = function () {
+    img.width = 200
+    img.height = 200
+    ctx.drawImage(img, 0, 0, 200, 200)
+    done()
+  }
+
+  img.src = 'data:image/svg+xml;base64,' + btoa(`
+    <svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+      <circle fill="#ff0000" cx="50" cy="50" r="50"/>
+    </svg>
+  `)
 }
