@@ -9,7 +9,69 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ==================
 ### Changed
 ### Added
+
 ### Fixed
+* Fix a crash when SVGs without width or height are loaded (#2486)
+* Fix fetching prebuilds during installation on certain newer versions of Node (#2497)
+* Fixed issue with fillText that was breaking subsequent fillText calls (#2171)
+* Fix svg rendering when the image is resized (#2498)
+
+3.1.0
+==================
+* Replaced `simple-get ` with ` Node.js builtin` `fetch` (#2309)
+* `ctx.font` has a new C++ parser and is 2x-400x faster. Please file an issue if you experience different results, as caching has been removed.
+* The restriction of registering fonts before a canvas is created has been removed. You can now register a font as late as right before the `fillText` call ([#1921](https://github.com/Automattic/node-canvas/issues/1921))
+
+### Added
+* Support for accessibility and links in PDFs
+* `ctx.direction` is implemented: `'rtl'` or `'ltr'` set the base direction of text
+* `ctx.textAlign` `'start'` and `'end'` are now `'right'` and `'left'` when `ctx.direction === 'rtl'`
+
+### Fixed
+* Fix a crash in `getImageData` when the rectangle is entirely outside the canvas. ([#2024](https://github.com/Automattic/node-canvas/issues/2024))
+* Fix `getImageData` cropping the resulting `ImageData` when the given rectangle is partly outside the canvas. ([#1849](https://github.com/Automattic/node-canvas/issues/1849))
+
+3.0.1
+==================
+### Fixed
+* Fixed accidental depenency on ambient DOM types
+
+3.0.0
+==================
+
+This release notably changes to using N-API. 🎉
+
+### Breaking
+* Dropped support for Node.js 16.x and below.
+### Changed
+* Migrated to N-API (by way of node-addon-api) and removed libuv and v8 dependencies
+* Change from node-pre-gyp to prebuild-install
+* Defer the initialization of the `op` variable to the `default` switch case to avoid a compiler warning. (#2229)
+* Use a `default` switch case with a null statement if some enum values aren't suppsed to be handled, this avoids a compiler warning. (#2229)
+* Migrate from librsvg's deprecated `rsvg_handle_get_dimensions()` and `rsvg_handle_render_cairo()` functions to the new `rsvg_handle_get_intrinsic_size_in_pixels()` and `rsvg_handle_render_document()` respectively. (#2229)
+* Avoid calling virtual methods in constructors/destructors to avoid bypassing virtual dispatch. (#2229)
+* Remove unused private field `backend` in the `Backend` class. (#2229)
+* Add Node.js v20 to CI. (#2237)
+* Replaced `dtslint` with `tsd` (#2313)
+* Changed PNG consts to static properties of Canvas class
+* Reverted improved font matching on Linux (#1572) because it doesn't work if fonts are installed. If you experience degraded font selection, please file an issue and use v3.0.0-rc3 in the meantime.
+
+### Added
+* Added string tags to support class detection
+* Throw Cairo errors in canvas.toBuffer()
+### Fixed
+* Fix a case of use-after-free. (#2229)
+* Fix usage of garbage value by filling the allocated memory entirely with zeros if it's not modified. (#2229)
+* Fix a potential memory leak. (#2229)
+* Fix the wrong type of setTransform
+* Fix the improper parsing of rgb functions issue. (#2300)
+* Fix issue related to improper parsing of leading and trailing whitespaces in CSS color. (#2301)
+* RGB functions should support real numbers now instead of just integers. (#2339)
+* Allow alternate or properly escaped quotes *within* font-family names
+* Fix TextMetrics type to include alphabeticBaseline, emHeightAscent, and emHeightDescent properties
+* Fix class properties should have defaults as standard js classes (#2390)
+* Fixed Exif orientation in JPEG files being ignored (#1670)
+* Align DOMMatrix/DOMPoint to spec by adding missing methods
 
 2.11.2
 ==================

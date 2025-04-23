@@ -63,19 +63,19 @@ export class Canvas {
 	readonly stride: number;
 
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_NO_FILTERS: number
+	static readonly PNG_NO_FILTERS: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_ALL_FILTERS: number
+	static readonly PNG_ALL_FILTERS: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_FILTER_NONE: number
+	static readonly PNG_FILTER_NONE: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_FILTER_SUB: number
+	static readonly PNG_FILTER_SUB: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_FILTER_UP: number
+	static readonly PNG_FILTER_UP: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_FILTER_AVG: number
+	static readonly PNG_FILTER_AVG: number
 	/** Constant used in PNG encoding methods. */
-	readonly PNG_FILTER_PAETH: number
+	static readonly PNG_FILTER_PAETH: number
 
 	constructor(width: number, height: number, type?: 'image'|'pdf'|'svg')
 
@@ -128,10 +128,13 @@ export class Canvas {
 }
 
 export interface TextMetrics {
+	readonly alphabeticBaseline: number;
 	readonly actualBoundingBoxAscent: number;
 	readonly actualBoundingBoxDescent: number;
 	readonly actualBoundingBoxLeft: number;
 	readonly actualBoundingBoxRight: number;
+	readonly emHeightAscent: number;
+	readonly emHeightDescent: number;
 	readonly fontBoundingBoxAscent: number;
 	readonly fontBoundingBoxDescent: number;
 	readonly width: number;
@@ -201,6 +204,7 @@ export class CanvasRenderingContext2D {
 	getTransform(): DOMMatrix;
 	resetTransform(): void;
 	setTransform(transform?: DOMMatrix): void;
+	setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
 	isPointInPath(x: number, y: number, fillRule?: CanvasFillRule): boolean;
 	scale(x: number, y: number): void;
 	clip(fillRule?: CanvasFillRule): void;
@@ -228,6 +232,8 @@ export class CanvasRenderingContext2D {
 	createPattern(image: Canvas|Image, repetition: 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat' | '' | null): CanvasPattern
 	createLinearGradient(x0: number, y0: number, x1: number, y1: number): CanvasGradient;
 	createRadialGradient(x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): CanvasGradient;
+	beginTag(tagName: string, attributes?: string): void;
+	endTag(tagName: string): void;
 	/**
 	 * _Non-standard_. Defaults to 'good'. Affects pattern (gradient, image,
 	 * etc.) rendering quality.
@@ -284,6 +290,7 @@ export class CanvasRenderingContext2D {
 	textBaseline: CanvasTextBaseline;
 	textAlign: CanvasTextAlign;
 	canvas: Canvas;
+	direction: 'ltr' | 'rtl';
 }
 
 export class CanvasGradient {
@@ -391,15 +398,28 @@ export class JPEGStream extends Readable {}
 /** This class must not be constructed directly; use `canvas.createPDFStream()`. */
 export class PDFStream extends Readable {}
 
+// TODO: this is wrong. See matrixTransform in lib/DOMMatrix.js
+type DOMMatrixInit = DOMMatrix | string | number[];
+
+interface DOMPointInit {
+  w?: number;
+  x?: number;
+  y?: number;
+  z?: number;
+}
+
 export class DOMPoint {
 	w: number;
 	x: number;
 	y: number;
 	z: number;
+	matrixTransform(matrix?: DOMMatrixInit): DOMPoint;
+	toJSON(): any;
+	static fromPoint(other?: DOMPointInit): DOMPoint;
 }
 
 export class DOMMatrix {
-	constructor(init: string | number[]);
+	constructor(init?: string | number[]);
 	toString(): string;
 	multiply(other?: DOMMatrix): DOMMatrix;
 	multiplySelf(other?: DOMMatrix): DOMMatrix;
@@ -410,6 +430,10 @@ export class DOMMatrix {
 	scale3d(scale?: number, originX?: number, originY?: number, originZ?: number): DOMMatrix;
 	scale3dSelf(scale?: number, originX?: number, originY?: number, originZ?: number): DOMMatrix;
 	scaleSelf(scaleX?: number, scaleY?: number, scaleZ?: number, originX?: number, originY?: number, originZ?: number): DOMMatrix;
+	/**
+	 * @deprecated
+	 */
+	scaleNonUniform(scaleX?: number, scaleY?: number): DOMMatrix;
 	rotateFromVector(x?: number, y?: number): DOMMatrix;
 	rotateFromVectorSelf(x?: number, y?: number): DOMMatrix;
 	rotate(rotX?: number, rotY?: number, rotZ?: number): DOMMatrix;
@@ -426,6 +450,7 @@ export class DOMMatrix {
 	invertSelf(): DOMMatrix;
 	setMatrixValue(transformList: string): DOMMatrix;
 	transformPoint(point?: DOMPoint): DOMPoint;
+	toJSON(): any;
 	toFloat32Array(): Float32Array;
 	toFloat64Array(): Float64Array;
 	readonly is2D: boolean;
@@ -464,9 +489,6 @@ export class ImageData {
 	readonly height: number;
 	readonly width: number;
 }
-
-// This is marked private, but is exported...
-// export function parseFont(description: string): object
 
 // Not documented: backends
 
